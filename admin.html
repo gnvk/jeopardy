@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Jeopardy Admin</title>
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="main">
+        <div id="jeopardy-table" style="height: 70%;"></div>
+        <div class="admin-controls">
+            <button id="correct-answer">Correct answer</button>
+            <button id="wrong-answer">Wrong answer</button>
+            <button id="pass">Pass</button>
+            <button id="play">Play music</button>
+            <button id="double" style="float: right; display: none;">Double Jeopardy!</button>
+            <button id="final" style="float: right; display: none;">Final Jeopardy!</button>
+        </div>
+        <div class="admin-controls">
+            <p id="question" class="admin-question"></p>
+            <p id="answer" class="admin-answer"></p>
+        </div>
+    </div>
+    <script src="socket.io.min.js"></script>
+    <script src="jquery-3.3.1.min.js"></script>
+    <script src="main.js"></script>
+    <script>
+        $(function () {
+            var socket = io();
+            var last_status;
+            var questions;
+            
+            createTable("#jeopardy-table");
+            for (let cat = 0; cat < 6; cat++) {
+                $("#cell-cat-" + cat).click(function () {
+                    socket.emit('admin', { cmd: 'show-category', category: cat});
+                });
+                for (let row = 0; row < 5; row++) {
+                    let question = row + "-" + cat;
+                    $("#question-" + question).click(function () {
+                        socket.emit('admin', { cmd: 'select-question', question: question });
+                    });
+                }
+            }
+            for (let player = 0; player < 3; player++) {
+                $("#player-cell-" + player).click(function (event) {
+                    console.log(last_status);
+                    if (last_status == null) {
+                        return;
+                    }
+                    if (last_status.dailyDoubles.includes(last_status.phase + "-" + last_status.activeQuestion) ||
+                            last_status.phase == 3 && !last_status.alreadyAnswered[player]) {
+                        let score = prompt("Please type the selected bet!", "");
+                        if (score != null && score != "") {
+                            socket.emit('admin', { cmd: 'select-player', player: player, amount: score });
+                        }
+                    } 
+                    if (event.altKey) {
+                        let score = prompt("Change " + last_status.players[player] +"'s score to: ", "");
+                        if (score != null && score != "") {
+                            socket.emit('admin', { cmd: 'change-score', player: player, score: score });
+                        }
+                    }
+                });
+            }
+
+            $.get('/questions', function(data) {
+                questions = JSON.parse(data);
+            });
+
+            $("#correct-answer").click(function () {
+                socket.emit('admin', { cmd: 'answer', correct: true });
+            });
+            $("#wrong-answer").click(function () {
+                socket.emit('admin', { cmd: 'answer', correct: false });
+            });
+            $("#pass").click(function () {
+                socket.emit('admin', { cmd: 'pass' });
+            });
+            $("#play").click(function () {
+                socket.emit('sound', 'jeopardy');
+            })
+
+            $("#double").click(function () {
+                socket.emit('admin', { cmd: 'double' })
+            });
+            $("#final").click(function () {
+                socket.emit('admin', { cmd: 'final' })
+            });
+
+            socket.on('status', function (status) {
+                last_status = status;
+                updateTable(status);
+
+                $("#correct-answer").prop('disabled', status.answeringPlayer == null);
+                $("#wrong-answer").prop('disabled', status.answeringPlayer == null);
+                $("#pass").prop('disabled', status.activeQuestion == null || status.answeringPlayer != null);
+                if (status.phase == 1) {
+                    $("#double").show();
+                    $("#final").hide();
+                } else if (status.phase == 2) {
+                    $("#double").hide();
+                    $("#final").show();
+                } else {
+                    $("#double").hide();
+                    $("#final").hide();
+                }
+                if (status.activeQuestion && status.phase < 3) {
+                    try {
+                        var row = status.activeQuestion[0];
+                        var cat = status.activeQuestion[2];
+                        var question = questions[status.phase - 1][cat][row];
+                        $("#question").text(question[0]);
+                        $("#answer").text(question[1]);
+                    } catch(err) {
+                        $("#question").text('');
+                        $("#answer").text('');
+                    }
+                } else {
+                    $("#question").text('');
+                    $("#answer").text('');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

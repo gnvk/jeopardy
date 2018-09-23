@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Jeopardy</title>
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div id="main" class="main text-center d-flex justify-content-center align-items-center">
+        <div class="align-center">
+            <h1 id="player-name" class="jeopardy medium"></h1>
+            <h1 id="score" class="jeopardy medium"></h1>
+            <img id="beep" src="red-button.png" style="display: none">
+        </div>
+    </div>
+    <script src="socket.io.min.js"></script>
+    <script src="jquery-3.3.1.min.js"></script>
+    <script>
+        $(function () {
+            var socket = io();
+            var userId;
+
+            $.get('/user', function (data) {
+                var player = JSON.parse(data);
+                userId = player.id;
+                $("#player-name").text(player.name);
+                $("#score").text(player.score);
+                $("#beep").fadeIn();
+                socket.emit("hello", userId);
+            });
+
+            $("#beep").click(function () {
+                if (userId != null && !$("#beep").prop('disabled')) {
+                    socket.emit("beep", userId);
+                }
+            });
+
+            socket.on('status', function (status) {
+                if (status.beepEnabled && !status.alreadyAnswered[userId]) {
+                    $("#beep").prop('disabled', false);
+                    $("#beep").attr('src', 'green-button.png');
+                } else {
+                    $("#beep").prop('disabled', true);
+                    $("#beep").attr('src', 'red-button.png');
+                }
+                if (userId != null) {
+                    $("#score").text(status.scores[userId]);
+                }
+                console.log(status);
+                console.log(userId);
+                console.log(userId == status.answeringPlayer);
+                if (userId == status.answeringPlayer) {
+                    $("#main").addClass("selected");
+                    $("#player-name").addClass("selected");
+                    $("#score").addClass("selected");
+                } else {
+                    $("#main").removeClass("selected");
+                    $("#player-name").removeClass("selected");
+                    $("#score").removeClass("selected");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

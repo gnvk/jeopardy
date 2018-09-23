@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Jeopardy</title>
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="main large">
+        <div id="jeopardy-table" style="height: 100%;"></div>
+    </div>
+
+    <script src="socket.io.min.js"></script>
+    <script src="jquery-3.3.1.min.js"></script>
+    <script src="main.js"></script>
+    <script>
+        $(function () {
+            var socket = io();
+
+            createTable("#jeopardy-table");
+
+            socket.on('status', function (status) {
+                updateTable(status);
+            });
+
+            socket.on('sound', function (sound) {
+                new Audio('audio/' + sound + '.mp3').play();
+            });
+        });
+    </script>
+</body>
+
+</html>
