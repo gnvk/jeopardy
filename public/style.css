@@ -60,6 +60,10 @@ body, html {
     color: #3f48cc;
 }
 
+.minus {
+    color: red;
+}
+
 .selector {
     font-style: italic;
 }

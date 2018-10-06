@@ -49,10 +49,7 @@
                 if (userId != null) {
                     $("#score").text(status.scores[userId]);
                 }
-                console.log(status);
-                console.log(userId);
-                console.log(userId == status.answeringPlayer);
-                if (userId == status.answeringPlayer) {
+                if (userId == status.answeringPlayer || userId == status.testPlayer) {
                     $("#main").addClass("selected");
                     $("#player-name").addClass("selected");
                     $("#score").addClass("selected");

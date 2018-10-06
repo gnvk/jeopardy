@@ -46,6 +46,9 @@ for (let phase = 0; phase < 2; phase++) {
     categories.push(categories_phase)
     questions.push(questions_phase);
 }
+final_question = cells[23][4];
+final_answer = cells[24][4];
+questions.push([final_question, final_answer]);
 
 
 const GAME_STATE_FILE = 'game.json'
@@ -238,6 +241,7 @@ io.on('connection', function (socket) {
         } else if (msg.cmd == "test") {
             if (status.answeredQuestions.length == 0 && status.activeQuestion == null) {
                 if (status.test) {
+                    status.beepEnabled = false;
                     status.test = false;
                     status.testPlayer = null;
                 } else {

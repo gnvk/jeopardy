@@ -79,6 +79,11 @@ function updateTable(status) {
         }
         $("#player-" + player + "-name").text(status.players[player] + ":");
         $("#player-" + player + "-score").text(status.scores[player]);
+        if (status.scores[player] < 0) {
+            $("#player-" + player).addClass("minus");
+        } else {
+            $("#player-" + player).removeClass("minus");
+        }
         if (status.selectorPlayer == player && status.phase < 3) {
             $("#player-" + player).addClass("selector");
         } else {

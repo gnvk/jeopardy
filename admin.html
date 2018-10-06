@@ -48,7 +48,6 @@
             }
             for (let player = 0; player < 3; player++) {
                 $("#player-cell-" + player).click(function (event) {
-                    console.log(last_status);
                     if (last_status == null) {
                         return;
                     }
@@ -103,10 +102,10 @@
                 $("#wrong-answer").prop('disabled', status.answeringPlayer == null);
                 $("#pass").prop('disabled', status.activeQuestion == null || status.answeringPlayer != null);
                 $("#test").prop('disabled', status.answeredQuestions.length != 0 || status.activeQuestion != null);
-                if (status.test == true && status.testPlayer != null) {
-                    $("#test").text = 'End beeper test';
+                if (status.test) {
+                    $("#test").text('End beeper test');
                 } else {
-                    $("#test").text = 'Start beeper test'
+                    $("#test").text('Start beeper test');
                 }
                 if (status.phase == 1) {
                     $("#double").show();
@@ -118,18 +117,18 @@
                     $("#double").hide();
                     $("#final").hide();
                 }
-                if (status.activeQuestion && status.phase < 3) {
-                    try {
-                        var row = status.activeQuestion[0];
-                        var cat = status.activeQuestion[2];
-                        var question = questions[status.phase - 1][cat][row];
-                        $("#question").text(question[0]);
-                        $("#answer").text(question[1]);
-                    } catch(err) {
-                        $("#question").text('');
-                        $("#answer").text('');
-                    }
-                } else {
+                var question = null;
+                if (status.activeQuestion) {
+                    let row = status.activeQuestion[0];
+                    let cat = status.activeQuestion[2];
+                    question = questions[status.phase - 1][cat][row];
+                } else if (status.phase == 3) {
+                    var question = questions[status.phase - 1];
+                }
+                try {
+                    $("#question").text(question[0]);
+                    $("#answer").text(question[1]);
+                } catch (err) {
                     $("#question").text('');
                     $("#answer").text('');
                 }
