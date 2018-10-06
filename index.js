@@ -62,7 +62,9 @@ var status = {
     scores: [0, 0, 0],
     selectorPlayer: 0,
     players: players.names,
-    playersJoined: [false, false, false]
+    playersJoined: [false, false, false],
+    test: false,
+    testPlayer: null
 }
 try {
     status = JSON.parse(fs.readFileSync(GAME_STATE_FILE));
@@ -135,12 +137,20 @@ io.on('connection', function (socket) {
     io.emit('status', status);
 
     socket.on('beep', function (player) {
-        if (status.beepEnabled && !status.alreadyAnswered[player]) {
-            status.answeringPlayer = player;
-            status.playersJoined[player] = true;
-            status.beepEnabled = false;
-            io.emit('sound', 'beep');
-            io.emit('status', status);
+        if (status.beepEnabled) {
+            if (status.activeQuestion && !status.alreadyAnswered[player]) {
+                status.answeringPlayer = player;
+                status.playersJoined[player] = true;
+                status.beepEnabled = false;
+                io.emit('sound', 'beep');
+                io.emit('status', status);
+            } else if (status.test && status.testPlayer == null) {
+                status.testPlayer = player;
+                status.playersJoined[player] = true;
+                status.beepEnabled = false;
+                io.emit('sound', 'beep');
+                io.emit('status', status);
+            }
         }
     });
 
@@ -225,6 +235,17 @@ io.on('connection', function (socket) {
             }
         } else if (msg.cmd == "change-score") {
             status.scores[msg.player] = parseInt(msg.score);
+        } else if (msg.cmd == "test") {
+            if (status.answeredQuestions.length == 0 && status.activeQuestion == null) {
+                if (status.test) {
+                    status.test = false;
+                    status.testPlayer = null;
+                } else {
+                    status.beepEnabled = true;
+                    status.test = true;
+                    status.testPlayer = null;
+                }
+            }
         }
         io.emit('status', status);
         var json = JSON.stringify(status);

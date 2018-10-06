@@ -16,6 +16,7 @@
             <button id="wrong-answer">Wrong answer</button>
             <button id="pass">Pass</button>
             <button id="play">Play music</button>
+            <button id="test">Start beeper test</button>
             <button id="double" style="float: right; display: none;">Double Jeopardy!</button>
             <button id="final" style="float: right; display: none;">Final Jeopardy!</button>
         </div>
@@ -83,6 +84,9 @@
             $("#play").click(function () {
                 socket.emit('sound', 'jeopardy');
             })
+            $("#test").click(function () {
+                socket.emit('admin', { cmd: 'test' });
+            })
 
             $("#double").click(function () {
                 socket.emit('admin', { cmd: 'double' })
@@ -98,6 +102,12 @@
                 $("#correct-answer").prop('disabled', status.answeringPlayer == null);
                 $("#wrong-answer").prop('disabled', status.answeringPlayer == null);
                 $("#pass").prop('disabled', status.activeQuestion == null || status.answeringPlayer != null);
+                $("#test").prop('disabled', status.answeredQuestions.length != 0 || status.activeQuestion != null);
+                if (status.test == true && status.testPlayer != null) {
+                    $("#test").text = 'End beeper test';
+                } else {
+                    $("#test").text = 'Start beeper test'
+                }
                 if (status.phase == 1) {
                     $("#double").show();
                     $("#final").hide();

@@ -84,7 +84,7 @@ function updateTable(status) {
         } else {
             $("#player-" + player).removeClass("selector");
         }
-        if (status.answeringPlayer == player) {
+        if (status.answeringPlayer == player || status.testPlayer == player) {
             $("#player-cell-" + player).addClass("selected");
         } else {
             $("#player-cell-" + player).removeClass("selected");

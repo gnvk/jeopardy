@@ -60,4 +60,7 @@ typings/
 # next.js build output
 .next
 
+# VS Code
+.vscode
+
 game.json
